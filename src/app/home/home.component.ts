@@ -6,14 +6,12 @@ import { PromotionService } from '../services/promotion.service';
 import { Leader } from '../shared/leader';
 import { LeaderService } from '../services/leader.service';
 
-
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-
   dish: Dish;
   promotion: Promotion;
   leader: Leader;
@@ -30,5 +28,4 @@ export class HomeComponent implements OnInit {
     this.leaderService.getFeaturedLeader()
       .then((result) => this.leader = result);
   }
-
 }

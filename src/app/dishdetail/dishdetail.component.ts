@@ -1,9 +1,12 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { Dish } from '../shared/dish';
 import { DishService } from '../services/dish.service';
 import { Params, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { switchMap } from 'rxjs/operators';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Feedback, ContactType } from '../shared/feedback';
+import { Comment } from '../shared/comment';
 
 @Component({
     selector: 'app-dishdetail',
@@ -11,18 +14,38 @@ import { switchMap } from 'rxjs/operators';
     styleUrls: ['./dishdetail.component.scss']
 })
 export class DishdetailComponent implements OnInit {
+    formErrors = {
+        'author': '',
+        'comment': '',
+    };
+
+    validationMessages = {
+        'author': {
+            'required': 'Author Name is required.',
+            'minlength': 'Author Name must be at least 2 characters long.',
+            'maxlength': 'Author Name cannot be more than 25 characters long.'
+        },
+        'comment': {
+            'required': 'Comment is required.',
+        },
+    };
+
     dish: Dish;
     dishIds: string[];
     prev: string;
     next: string;
+    feedbackForm: FormGroup;
+    newComment: Comment;
 
-    constructor(private dishService: DishService, private route: ActivatedRoute, private location: Location) { }
+    constructor(private dishService: DishService, private route: ActivatedRoute, private location: Location, private fb: FormBuilder) {
+        this.createForm();
+    }
 
     ngOnInit() {
         this.route.params.pipe(switchMap((params: Params) => this.dishService.getDish(params['id'])))
             .subscribe(dish => { this.dish = dish; this.setPrevNex(dish.id); });
         this.dishService.getDishIds().subscribe((result) => this.dishIds = result);
-        
+
     }
 
     setPrevNex(dishId: string) {
@@ -35,4 +58,49 @@ export class DishdetailComponent implements OnInit {
         this.location.back();
     }
 
+    createForm() {
+        this.feedbackForm = this.fb.group({
+            author: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]],
+            rating: [5, []],
+            comment: ['', [Validators.required]],
+        });
+
+        this.feedbackForm.valueChanges.subscribe(data => this.onValueChanged(data));
+        this.onValueChanged();
+    }
+
+    onValueChanged(data?: any) {
+        if (!this.feedbackForm) { return; }
+        const form = this.feedbackForm;
+        for (const field in this.formErrors) {
+            if (this.formErrors.hasOwnProperty(field)) {
+                this.formErrors[field] = '';
+                const control = form.get(field);
+                if (control && control.dirty && !control.valid) {
+                    const messages = this.validationMessages[field];
+                    for (const key in control.errors) {
+                        if (control.errors.hasOwnProperty(key)) {
+                            this.formErrors[field] += messages[key] + ' ';
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    onSubmit() {
+        this.newComment = this.feedbackForm.value;
+        console.log(this.newComment);
+
+        if(this.feedbackForm.valid) {
+            this.newComment.date = Date.now().toString();
+            this.dish.comments.push(this.newComment);
+        }
+        
+        this.feedbackForm.reset({
+            author: '',
+            rating: 5,
+            comment: ''
+        });
+    }
 }

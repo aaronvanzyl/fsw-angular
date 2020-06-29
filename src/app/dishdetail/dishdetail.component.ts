@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Inject } from '@angular/core';
 import { Dish } from '../shared/dish';
 import { DishService } from '../services/dish.service';
 import { Params, ActivatedRoute } from '@angular/router';
@@ -37,7 +37,11 @@ export class DishdetailComponent implements OnInit {
     feedbackForm: FormGroup;
     newComment: Comment;
 
-    constructor(private dishService: DishService, private route: ActivatedRoute, private location: Location, private fb: FormBuilder) {
+    constructor(private dishService: DishService, 
+        private route: ActivatedRoute, 
+        private location: Location, 
+        private fb: FormBuilder,
+        @Inject("BaseURL") private BaseURL) {
         this.createForm();
     }
 
@@ -89,11 +93,10 @@ export class DishdetailComponent implements OnInit {
     }
 
     onSubmit() {
-        this.newComment = this.feedbackForm.value;
-        console.log(this.newComment);
-
         if(this.feedbackForm.valid) {
+            this.newComment = this.feedbackForm.value;
             this.newComment.date = Date.now().toString();
+            console.log(this.newComment);
             this.dish.comments.push(this.newComment);
         }
         

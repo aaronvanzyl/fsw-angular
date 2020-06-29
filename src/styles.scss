@@ -41,12 +41,14 @@ body {
   flex: 1 1 auto;
 }
 
-// some basic resets 
-
-
-
-/* You can add global styles to this file, and also import other style files */
 .container {
     margin: 20px;
     display:flex;
+}
+
+.highlight {
+  background-color: $background-pale;
+  border: 1px solid $primary-color-dark;
+  z-index: 1;
+  transform: scale(1.01);
 }

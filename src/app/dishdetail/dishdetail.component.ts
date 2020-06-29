@@ -49,14 +49,15 @@ export class DishdetailComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.createForm()
+        this.createForm();
+        this.dishService.getDishIds()
+            .subscribe((result) => this.dishIds = result,
+                errMsg => this.errMsg = errMsg);
         this.route.params
             .pipe(switchMap((params: Params) => this.dishService.getDish(params['id'])))
             .subscribe(dish => { this.dish = dish; this.dishcopy = dish; this.setPrevNex(dish.id); },
                 errMsg => this.errMsg = errMsg);
-        this.dishService.getDishIds()
-            .subscribe((result) => this.dishIds = result,
-                errMsg => this.errMsg = errMsg);
+        
 
     }
 

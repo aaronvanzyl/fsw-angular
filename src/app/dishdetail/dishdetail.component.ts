@@ -34,21 +34,27 @@ export class DishdetailComponent implements OnInit {
     dishIds: string[];
     prev: string;
     next: string;
-    feedbackForm: FormGroup;
+    commentForm: FormGroup;
     newComment: Comment;
+    errMsg: string;
 
     constructor(private dishService: DishService, 
         private route: ActivatedRoute, 
         private location: Location, 
         private fb: FormBuilder,
         @Inject("BaseURL") private BaseURL) {
-        this.createForm();
+        
     }
 
     ngOnInit() {
-        this.route.params.pipe(switchMap((params: Params) => this.dishService.getDish(params['id'])))
-            .subscribe(dish => { this.dish = dish; this.setPrevNex(dish.id); });
-        this.dishService.getDishIds().subscribe((result) => this.dishIds = result);
+        this.createForm();
+        this.route.params
+            .pipe(switchMap((params: Params) => this.dishService.getDish(params['id'])))
+            .subscribe(dish => { this.dish = dish; this.setPrevNex(dish.id); },
+                errMsg => this.errMsg = errMsg);
+        this.dishService.getDishIds()
+            .subscribe((result) => this.dishIds = result,
+                errMsg => this.errMsg = errMsg);
 
     }
 
@@ -63,19 +69,19 @@ export class DishdetailComponent implements OnInit {
     }
 
     createForm() {
-        this.feedbackForm = this.fb.group({
+        this.commentForm = this.fb.group({
             author: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]],
             rating: [5, []],
             comment: ['', [Validators.required]],
         });
 
-        this.feedbackForm.valueChanges.subscribe(data => this.onValueChanged(data));
+        this.commentForm.valueChanges.subscribe(data => this.onValueChanged(data));
         this.onValueChanged();
     }
 
     onValueChanged(data?: any) {
-        if (!this.feedbackForm) { return; }
-        const form = this.feedbackForm;
+        if (!this.commentForm) { return; }
+        const form = this.commentForm;
         for (const field in this.formErrors) {
             if (this.formErrors.hasOwnProperty(field)) {
                 this.formErrors[field] = '';
@@ -93,14 +99,14 @@ export class DishdetailComponent implements OnInit {
     }
 
     onSubmit() {
-        if(this.feedbackForm.valid) {
-            this.newComment = this.feedbackForm.value;
+        if(this.commentForm.valid) {
+            this.newComment = this.commentForm.value;
             this.newComment.date = Date.now().toString();
             console.log(this.newComment);
             this.dish.comments.push(this.newComment);
         }
         
-        this.feedbackForm.reset({
+        this.commentForm.reset({
             author: '',
             rating: 5,
             comment: ''

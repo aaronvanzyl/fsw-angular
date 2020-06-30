@@ -8,13 +8,33 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Feedback, ContactType } from '../shared/feedback';
 import { Comment } from '../shared/comment';
 import { error } from 'protractor';
+import { visibility, flyInOut, expand } from '../animations/app.animation';
 
 @Component({
     selector: 'app-dishdetail',
     templateUrl: './dishdetail.component.html',
-    styleUrls: ['./dishdetail.component.scss']
+    styleUrls: ['./dishdetail.component.scss'],
+    animations: [
+        visibility(),
+        flyInOut(),
+        expand()
+    ],
+    host: {
+        '[@flyInOut]': 'true',
+        'style': 'display: block;'
+    }
 })
 export class DishdetailComponent implements OnInit {
+    dish: Dish;
+    dishIds: string[];
+    prev: string;
+    next: string;
+    commentForm: FormGroup;
+    newComment: Comment;
+    errMsg: string;
+    dishcopy: Dish;
+    visibility = 'shown';
+
     formErrors = {
         'author': '',
         'comment': '',
@@ -31,21 +51,12 @@ export class DishdetailComponent implements OnInit {
         },
     };
 
-    dish: Dish;
-    dishIds: string[];
-    prev: string;
-    next: string;
-    commentForm: FormGroup;
-    newComment: Comment;
-    errMsg: string;
-    dishcopy: Dish;
-
     constructor(private dishService: DishService,
         private route: ActivatedRoute,
         private location: Location,
         private fb: FormBuilder,
         @Inject("BaseURL") private BaseURL) {
-            
+
     }
 
     ngOnInit() {
@@ -54,10 +65,10 @@ export class DishdetailComponent implements OnInit {
             .subscribe((result) => this.dishIds = result,
                 errMsg => this.errMsg = errMsg);
         this.route.params
-            .pipe(switchMap((params: Params) => this.dishService.getDish(params['id'])))
-            .subscribe(dish => { this.dish = dish; this.dishcopy = dish; this.setPrevNex(dish.id); },
+            .pipe(switchMap((params: Params) => { this.visibility = 'hidden'; return this.dishService.getDish(params['id']); }))
+            .subscribe(dish => { this.dish = dish; this.dishcopy = dish; this.setPrevNex(dish.id); this.visibility = 'shown'; },
                 errMsg => this.errMsg = errMsg);
-        
+
 
     }
 

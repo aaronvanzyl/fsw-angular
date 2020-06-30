@@ -68,8 +68,6 @@ export class DishdetailComponent implements OnInit {
             .pipe(switchMap((params: Params) => { this.visibility = 'hidden'; return this.dishService.getDish(params['id']); }))
             .subscribe(dish => { this.dish = dish; this.dishcopy = dish; this.setPrevNex(dish.id); this.visibility = 'shown'; },
                 errMsg => this.errMsg = errMsg);
-
-
     }
 
     setPrevNex(dishId: string) {
